@@ -23,13 +23,17 @@
           myTitle: 'Hello Vue!',
         },
       });
+      
+ 
     </script>
 
     <h2>Zerodha</h2>
+    <p>{{searchWord}}</p> 
     <!-- Search button  -->
     <form class="example" action="" style="margin:auto;max-width:300px">
-      <input id="search" type="text" placeholder="Search.." name="search1">
+      <input id="search" type="text" placeholder="Search.." name="search">
       <button type="submit"><i class="fa fa-search"></i></button>
+      <!-- <input onclick="setGetParameter()" type="submit" class="btn btn-primary" value = "View Details"/> -->
     </form>
 
 
@@ -61,6 +65,8 @@
           {% endfor %}
       </tbody>
   </table>
-</div>    
+</div>   
+
+
   </body>
 </html>

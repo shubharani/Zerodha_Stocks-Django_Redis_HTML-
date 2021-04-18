@@ -3,8 +3,10 @@ from rest_framework.decorators import api_view
 import json
 from django.conf import settings
 import redis
-import csv
+import csv, io, zipfile
 import requests
+from django.http import HttpResponse
+# from vue_app.models import Post
 from datetime import datetime
 from bs4 import BeautifulSoup
 # from django.core.cache import cache
@@ -20,7 +22,13 @@ r = redis.StrictRedis(host=settings.REDIS_HOST,
 
 
 def home(request):
-    data = get_stock_by_name("")
+    # data = get_stock_by_name("")
+    getBhavCopy()
+    search_term = ''
+    if 'search' in request.GET:
+        search_term = request.GET['search']
+    print(search_term)
+    data = get_stock_by_name(search_term)
     return render(request, 'vue_app/test.html',{'data': data})
 
 def get_stock_by_name(name):
@@ -43,7 +51,7 @@ def create_stock(data):
     pipe = r.pipeline()
     # print("lkhkj",data['name'])
     primary_key = 'code:{}::name:{}'.format(data['code'], data['name'].lower())
-    print("before",data)
+    # print("before",data)
     pipe.hmset(primary_key, data)
     # pipe.zadd('top_ten', {primary_key: data['code']})  # use data['turnover'] if needed
     pipe.execute()
@@ -111,8 +119,37 @@ def process_csv_to_db(csv_file):
                 create_stock(data)
             line_count += 1
 
-home_page = get_download_page(HOMEPAGE_PATH)
-zip_dload_url = get_download_url(home_page)
-zipfile_obj = get_zip(zip_dload_url)
-extracted_csv_filename = extract_csv_from_zip(zipfile_obj)
-process_csv_to_db(extracted_csv_filename)
+# home_page = get_download_page(HOMEPAGE_PATH)
+# print(home_page)
+# zip_dload_url = get_download_url(home_page)
+# zipfile_obj = get_zip(zip_dload_url)
+# extracted_csv_filename = extract_csv_from_zip(zipfile_obj)
+# process_csv_to_db(extracted_csv_filename)
+
+BSE_URL = 'http://www.bseindia.com/markets/equity/EQReports/BhavCopyDebt.aspx?expandable=3'
+def getBhavCopy():
+    # bse_page = requests.get(BSE_URL)
+    # soup = BeautifulSoup(bse_page.content,'lxml')
+
+    # iframe_url = soup.find('iframe').attrs.get('src')
+    # frame_page = requests.get(BSE_URL[:BSE_URL.rfind('/')+1] + iframe_url)
+    # print(frame_page)
+    # soup = BeautifulSoup(frame_page.content, 'lxml')
+    # zip_file_url = soup.find(id='btnhylZip').attrs.get('href')
+    r = requests.get('http://www.bseindia.com/markets/equity/EQReports/BhavCopyDebt.aspx?expandable=3')
+    print("kjhgjmhh")
+    soup = BeautifulSoup(r.text, 'lxml')
+    stories = []
+
+    for a in soup.find_all('a', attrs={'class': 'btnhylZip'}):
+        stories.append([a.text, a['href']])
+        print("here",stories[0])
+        zip_file = requests.get(stories)
+        print("got",zip_file)
+        z = zipfile.ZipFile(io.BytesIO(zip_file.content))
+        z.extractall('zips')
+        return str('zips' + '/' + z.namelist()[0])
+
+
+
+

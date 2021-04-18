@@ -24,7 +24,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # path('t1',vue_views.test_vue),
-    path('t2', vue_views.home, name='home'),
+    path('', vue_views.home, name='home'),
+    # path(r'search', vue_views.search_name, name='search_name'),
     # path('', manage_items, name="items"),
     # path('<slug:key>', manage_item, name="single_item")
 ]
